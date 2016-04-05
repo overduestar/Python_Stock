@@ -23,7 +23,13 @@ def stock_download_data(year,month,stock,Stock_DAY_URL):
 
 	urlList = Stock_DAY_URL %(year,month,year,month,stock)
 	localList = "./data/%04d%02d_%s.csv" %(year,month,stock)
-	urllib.request.urlretrieve(urlList, localList)
+	with urllib.request.urlopen(urlList) as response, \
+			open(localList, 'w') as infile:
+		try:
+			# specify decoding to remove OS dependency
+			infile.write(response.read().decode('big5hkscs')) # for '恒', '碁'
+		except UnicodeDecodeError:
+			return False
 	if(path.getsize(localList) == 0):	
 		os.remove(localList)	
 
@@ -85,7 +91,14 @@ def parse_stock_table_htm2csv(StockURL,StockTable):
 	if(os.path.exists('stock_data') == False):
 		os.system('mkdir stock_data')
 
-	urllib.request.urlretrieve(StockURL, localList)
+	with urllib.request.urlopen(StockURL) as response, \
+			open(localList, 'w') as infile:
+		try:
+			# specify decoding to remove OS dependency
+			infile.write(response.read().decode('big5hkscs')) # for '恒', '碁'
+		except UnicodeDecodeError:
+			return False
+
 
 	infile = open('./stock_data/'+StockTable+'.htm','r')
 	outfile = open('./stock_data/'+StockTable+'.csv','w')
