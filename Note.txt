@@ -1,2 +1,12 @@
 1. Document:
 (1) Project proposal: https://docs.google.com/document/d/1HUef4v3gpdljmib5Jn2NGSSsbqo4tbrVjVNmGTqJEbk/edit#heading=h.gjdgxs
+
+2. Git Command
+git config --global user.name “kuoliwu"
+git config --global user.email b921111@gmail.com
+git clone git@github.com:overduestar/Python_Stock.git
+
+git add file
+git commit 
+git push origin master
+
