@@ -112,7 +112,6 @@ def stock_download_all_day(StartYear,StartMonth,Stock):
 		m = 0
 	stock_combin_all_day(Stock)
 
-<<<<<<< HEAD
 def stock_download(StartYear,StartMonth):
         if(os.path.exists('stock_data') == False):
                 os.system('mkdir stock_data')
@@ -146,13 +145,6 @@ def parseinfo_stocktable(browser_urlinfo):
                                 name = data
                                 g_StockTab.append(serial_num, name)
                                 item_flag = 0
-        
-=======
-def stock_download(StartYear,StartMonth,StockTable):
-	f = open('./stock_data/'+StockTable+'.csv','r')
-	for row in csv.DictReader(f):
-		print(row['Number'])
-		stock_download_all_day(StartYear,StartMonth,row['Number'])
 
 def parse_stock_table_htm2csv(StockURL,StockTable):
 	next_line = 0
@@ -188,7 +180,6 @@ def parse_stock_table_htm2csv(StockURL,StockTable):
 	outfile.close()
 
 
->>>>>>> 7692d3283a7dbc2be559242a62292931e9181f08
 print('=====Start====')
 print(datetime.today())
 print(datetime.today().year)
