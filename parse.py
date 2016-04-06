@@ -57,7 +57,13 @@ def stock_download_data(year,month,stock,Stock_DAY_URL):
 
 	urlList = Stock_DAY_URL %(year,month,year,month,stock)
 	localList = "./data/%04d%02d_%s.csv" %(year,month,stock)
-	urllib.request.urlretrieve(urlList, localList)
+	with urllib.request.urlopen(urlList) as response, \
+			open(localList, 'w') as infile:
+		try:
+			# specify decoding to remove OS dependency
+			infile.write(response.read().decode('big5hkscs')) # for '恒', '碁'
+		except UnicodeDecodeError:
+			return False
 	if(path.getsize(localList) == 0):	
 		os.remove(localList)	
 
@@ -106,6 +112,7 @@ def stock_download_all_day(StartYear,StartMonth,Stock):
 		m = 0
 	stock_combin_all_day(Stock)
 
+<<<<<<< HEAD
 def stock_download(StartYear,StartMonth):
         if(os.path.exists('stock_data') == False):
                 os.system('mkdir stock_data')
@@ -140,6 +147,48 @@ def parseinfo_stocktable(browser_urlinfo):
                                 g_StockTab.append(serial_num, name)
                                 item_flag = 0
         
+=======
+def stock_download(StartYear,StartMonth,StockTable):
+	f = open('./stock_data/'+StockTable+'.csv','r')
+	for row in csv.DictReader(f):
+		print(row['Number'])
+		stock_download_all_day(StartYear,StartMonth,row['Number'])
+
+def parse_stock_table_htm2csv(StockURL,StockTable):
+	next_line = 0
+	localList = "./stock_data/StockTable.htm"
+
+	if(os.path.exists('stock_data') == False):
+		os.system('mkdir stock_data')
+
+	with urllib.request.urlopen(StockURL) as response, \
+			open(localList, 'w') as infile:
+		try:
+			# specify decoding to remove OS dependency
+			infile.write(response.read().decode('big5hkscs')) # for '恒', '碁'
+		except UnicodeDecodeError:
+			return False
+
+
+	infile = open('./stock_data/'+StockTable+'.htm','r')
+	outfile = open('./stock_data/'+StockTable+'.csv','w')
+
+	outfile.write("Number,Name\n")
+	for line in infile.readlines():
+		if line.find('&nbsp') != -1:
+			if( line.split('&nbsp')[0].split('>')[1].split('<')[0] != ''):
+				outfile.write(line.split('&nbsp')[0].split('>')[1].split('<')[0])
+				if next_line == 0:
+					outfile.write(",")
+					next_line = 1
+				else:
+					outfile.write("\n")
+					next_line = 0		
+	infile.close()
+	outfile.close()
+
+
+>>>>>>> 7692d3283a7dbc2be559242a62292931e9181f08
 print('=====Start====')
 print(datetime.today())
 print(datetime.today().year)
