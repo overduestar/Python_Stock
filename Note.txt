@@ -10,3 +10,5 @@ git add file
 git commit 
 git push origin master
 
+3. Execute
+python main.py

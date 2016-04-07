@@ -14,10 +14,11 @@ import codecs
 class StockTableInfo:
 	__item_list = []
 	__item_num = 0
-	def __init__(self):
+	def __init__(self, stockTabURL, stockDayURL):
 		self.item_list = []
 		self.item_num = 0
-		self.parseinfo_stocktable()
+		self.stockTabURL = stockTabURL
+		self.stockDayURL = stockDayURL
 	def append(self, serial_number, name):
 		item = []
 		item.append(serial_number)
@@ -44,29 +45,6 @@ class StockTableInfo:
 			item = self.__item_list[idx]
 			print("serial number:", item[0], " ;name:", item[1])
 
-	def parseinfo_stocktable(self):
-	
-		browser_urlinfo = codecs.decode(urllib.request.urlopen(g_StockURL).read(), 'big5', errors='ignore')
-
-		if (len(browser_urlinfo) == 0):
-        		return
-
-		urlinfo_split = re.split("<td", browser_urlinfo)
-		item_flag = 0
-		serial_num = ""
-		name = ""
-		for i in range(0, len(urlinfo_split)):
-			data = ""
-			if (urlinfo_split[i].find("td") >= 0):
-				data = urlinfo_split[i].split('>')[1].replace("&nbsp;", "").split('<')[0]
-			if (len(data) > 0):
-	                        if (item_flag == 0):
-	                                serial_num = data
-	                                item_flag = 1
-	                        elif (item_flag == 1):
-	                                name = data
-	                                self.append(serial_num, name)
-	                                item_flag = 0
 	
 def stock_download_data(year,month,stock,Stock_DAY_URL):
 
@@ -106,38 +84,67 @@ def stock_combin_all_day(Stock):
 	if(path.getsize(output_name) == 0):	
 		os.remove(output_name)	
 
-def stock_download_all_day(StartYear,StartMonth,Stock):
+def stock_download_all_day(cStockTabInfo,StartYear,StartMonth,Stock):
 	for y in range(StartYear,datetime.today().year+1):
 		if StartYear == datetime.today().year:
 			for m in range(StartMonth,datetime.today().month+1):
 				#print('Y%04d-%02d' %(y,m))
 				#print(g_Stock_DAY_URL %(y,m,y,m,Stock))
-				stock_download_data(y,m,Stock,g_Stock_DAY_URL)
+				stock_download_data(y,m,Stock,cStockTabInfo.stockDayURL)
 		elif y == datetime.today().year:
 			for m in range(1,datetime.today().month+1):
 				#print('R%04d-%02d' %(y,m))
 				#print(g_Stock_DAY_URL %(y,m,y,m,Stock))
-				stock_download_data(y,m,Stock,g_Stock_DAY_URL)
+				stock_download_data(y,m,Stock,cStockTabInfo.stockDayURL)
 		elif y == StartYear:
 			for m in range(StartMonth,12+1):
 				#print('V%04d-%02d' %(y,m))
 				#print(g_Stock_DAY_URL %(y,m,y,m,Stock))
-				stock_download_data(y,m,Stock,g_Stock_DAY_URL)
+				stock_download_data(y,m,Stock,cStockTabInfo.stockDayURL)
 		else:
 			for m in range(1,12+1):
 				#print('N%04d-%02d' %(y,m))
-				stock_download_data(y,m,Stock,g_Stock_DAY_URL)
+				stock_download_data(y,m,Stock,cStockTabInfo.stockDayURL)
 		m = 0
 	stock_combin_all_day(Stock)
 
-def stock_download(StartYear,StartMonth):
+def stock_download(cStockTabInfo,StartYear,StartMonth):
         if(os.path.exists('stock_data') == False):
                 os.system('mkdir stock_data')
-        for i in range(0, g_StockTab.getSize()):
-                item = g_StockTab.getItem(i)
-                print(item[0])
-                stock_download_all_day(StartYear,StartMonth,item[0])
 
+        print("Downloading stock data..........")
+
+        for i in range(0, cStockTabInfo.getSize()):
+                item = cStockTabInfo.getItem(i)
+                #print(item[0])
+                done = int(100 *i / int(cStockTabInfo.getSize()))
+                sys.stdout.write("\r[%s%s] %d%s %s" % ('=' * done, ' ' * (100-done),done,'%',item[0]))
+                sys.stdout.flush()
+                stock_download_all_day(cStockTabInfo,StartYear,StartMonth,item[0])
+
+def parseinfo_stocktable(cStockTabInfo):
+	
+	browser_urlinfo = codecs.decode(urllib.request.urlopen(cStockTabInfo.stockTabURL).read(), 'big5', errors='ignore')
+
+	if (len(browser_urlinfo) == 0):
+       		return
+
+	urlinfo_split = re.split("<td", browser_urlinfo)
+	item_flag = 0
+	serial_num = ""
+	name = ""
+	for i in range(0, len(urlinfo_split)):
+		data = ""
+		if (urlinfo_split[i].find("td") >= 0):
+			data = urlinfo_split[i].split('>')[1].replace("&nbsp;", "").split('<')[0]
+		if (len(data) > 0):
+                        if (item_flag == 0):
+                                serial_num = data
+                                item_flag = 1
+                        elif (item_flag == 1):
+                                name = data
+                                cStockTabInfo.append(serial_num, name)
+                                item_flag = 0
 
 def parse_stock_table_htm2csv(StockURL,StockTable):
 	next_line = 0
@@ -171,35 +178,4 @@ def parse_stock_table_htm2csv(StockURL,StockTable):
 					next_line = 0		
 	infile.close()
 	outfile.close()
-
-
-print('=====Start====')
-tStart = time.time()
-
-print(datetime.today())
-print(datetime.today().year)
-print(datetime.today().month)
-print(datetime.today().day)
-print('%02d' %(datetime.today().day))
-
-#=============== Pattern =================
-g_StockURL =  "http://www.emega.com.tw/js/StockTable.htm" #"http://www.emega.com.tw/js/StockTable.xls" # For Stock context
-g_Stock_DAY_URL = "http://www.twse.com.tw/ch/trading/exchange/STOCK_DAY/STOCK_DAY_print.php?genpage=genpage/Report%04d%02d/%04d%02d_F3_1_8_%s.php&type=csv" # For Stock Day Info.
-g_StockTableDirName = 'StockTable'
-g_StockTab = StockTableInfo()
-#=========================================
-
-#parseinfo_stocktable(g_StockURL)
-#stock_download_all_day(2015,2,'4545')
-#stock_download_all_day(2015,9,'3322')
-#stock_combin_all_day('4545')
-#stock_combin_all_day('3322')
-stock_download(2016,4)
-#os.system('del -rf data')
-#download_stock_all_data(g_StockTableDirName,g_Stock_DAY_URL)
-
-tEnd = time.time()
-print("Time taken: %f seconds" %(tEnd - tStart))
-print('======End=====')
-
 
