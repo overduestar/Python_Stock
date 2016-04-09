@@ -118,7 +118,7 @@ def stock_download(cStockTabInfo,StartYear,StartMonth):
                 item = cStockTabInfo.getItem(i)
                 #print(item[0])
                 done = int(100 *i / int(cStockTabInfo.getSize()))
-                sys.stdout.write("\r[%s%s] %d%s %s" % ('=' * done, ' ' * (100-done),done,'%',item[0]))
+                sys.stdout.write("\r[%s%s] %d%s %s  " % ('=' * done, ' ' * (100-done),done,'%',item[0]))
                 sys.stdout.flush()
                 stock_download_all_day(cStockTabInfo,StartYear,StartMonth,item[0])
 
