@@ -12,3 +12,6 @@ git push origin master
 
 3. Execute
 python main.py
+
+4. Auto send mail
+python mail.py
